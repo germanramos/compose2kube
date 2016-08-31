@@ -74,6 +74,8 @@ func writeFile(shortName string, sufix string, object interface{}) {
 		}
 		// Remove mark for the right yaml marshal of variables
 		fixedData := strings.Replace(string(data), "\\rYMLMARSHALBUG", "", -1)
+		// Comment ExternalName in order to be compatible with Rancher
+		fixedData = strings.Replace(fixedData, "ExternalName:", "# ExternalName:", -1)
 		// Save the replication controller for the Docker compose service to the
 		// configs directory.
 		outputFileName := fmt.Sprintf("%s-%s.yml", shortName, sufix)
