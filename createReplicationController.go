@@ -89,7 +89,14 @@ func configureVariables(service *config.ServiceConfig) []api.EnvVar {
 		if strings.Contains(env, "=") {
 			parts := strings.Split(env, "=")
 			ename := parts[0]
-			evalue := "\r" + parts[1]
+			var evalue string
+			if asJSON == true {
+				evalue = parts[1]
+			} else {
+				// I do this in orer to force the yml marshaller to put quotes in all variables
+				// It will be removed later when writing file
+				evalue = "\rYMLMARSHALBUG" + parts[1]
+			}
 			envs = append(envs, api.EnvVar{Name: ename, Value: evalue})
 		}
 	}

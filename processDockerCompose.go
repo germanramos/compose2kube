@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/libcompose/config"
 	"github.com/docker/libcompose/project"
@@ -71,11 +72,13 @@ func writeFile(shortName string, sufix string, object interface{}) {
 		if err != nil {
 			log.Fatalf("Failed to marshal file %s-%s: %v", shortName, sufix, err)
 		}
+		// Remove mark for the right yaml marshal of variables
+		fixedData := strings.Replace(string(data), "\\rYMLMARSHALBUG", "", -1)
 		// Save the replication controller for the Docker compose service to the
 		// configs directory.
 		outputFileName := fmt.Sprintf("%s-%s.yml", shortName, sufix)
 		outputFilePath := filepath.Join(outputDir, outputFileName)
-		if err := ioutil.WriteFile(outputFilePath, data, 0644); err != nil {
+		if err := ioutil.WriteFile(outputFilePath, []byte(fixedData), 0644); err != nil {
 			log.Fatalf("Failed to write service %s: %v", outputFileName, err)
 		}
 		fmt.Println(outputFilePath)
