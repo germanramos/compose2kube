@@ -32,7 +32,7 @@ func createReplicationController(name string, shortName string, service *config.
 		},
 		ObjectMeta: api.ObjectMeta{
 			Name:      shortName,
-			Namespace: "${NAMESPACE}",
+			Namespace: calculateNamespace(),
 			Labels:    configureLabels(shortName, service),
 		},
 		Spec: api.ReplicationControllerSpec{

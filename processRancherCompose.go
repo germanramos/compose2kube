@@ -93,30 +93,39 @@ func cleanServices(name string, rancherCompose map[interface{}]interface{}) {
 	}
 }
 
+func calculateNamespace() string {
+	if namespace == "ASK" || namespace == "ask" {
+		return "${NAMESPACE}"
+	}
+	return namespace
+}
+
 func processRancherCompose(rancherCompose map[interface{}]interface{}) {
 	if len(rancherCompose) == 0 {
 		return
 	}
 
-	catalog := rancherCompose[".catalog"].(map[interface{}]interface{})
-	var questions []interface{}
-	if catalog["questions"] != nil {
-		questions = catalog["questions"].([]interface{})
+	if calculateNamespace() == "${NAMESPACE}" {
+		catalog := rancherCompose[".catalog"].(map[interface{}]interface{})
+		var questions []interface{}
+		if catalog["questions"] != nil {
+			questions = catalog["questions"].([]interface{})
+		}
+
+		firstQuestion := make(map[string]interface{})
+		firstQuestion["variable"] = "NAMESPACE"
+		firstQuestion["default"] = "default"
+		firstQuestion["label"] = "Kubernetes Namespace"
+		firstQuestion["description"] = "Make sure the Namespace exists or you will not be able to see the service"
+		firstQuestion["required"] = true
+		firstQuestion["type"] = "string"
+
+		newQuestionsArray := make([]interface{}, 1)
+		newQuestionsArray[0] = firstQuestion
+
+		newQuestions := Append(newQuestionsArray, questions...) // The '...' is essential!
+		catalog["questions"] = newQuestions
 	}
-
-	firstQuestion := make(map[string]interface{})
-	firstQuestion["variable"] = "NAMESPACE"
-	firstQuestion["default"] = "default"
-	firstQuestion["label"] = "Kubernetes Namespace"
-	firstQuestion["description"] = "Make sure the Namespace exists or you will not be able to see the service"
-	firstQuestion["required"] = true
-	firstQuestion["type"] = "string"
-
-	newQuestionsArray := make([]interface{}, 1)
-	newQuestionsArray[0] = firstQuestion
-
-	newQuestions := Append(newQuestionsArray, questions...) // The '...' is essential!
-	catalog["questions"] = newQuestions
 
 	byteArray, _ := yaml.Marshal(rancherCompose)
 

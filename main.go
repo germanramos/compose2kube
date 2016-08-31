@@ -19,12 +19,14 @@ var (
 	composeFilePath string
 	outputDir       string
 	asJSON          bool
+	namespace       string
 )
 
 func init() {
 	flag.StringVar(&composeFilePath, "compose-file-path", "./", "Specify an alternate path for compose files")
 	flag.StringVar(&outputDir, "output-dir", "output", "Kubernetes configs output `directory`")
-	flag.BoolVar(&asJSON, "json", false, "output json instead of yaml")
+	flag.BoolVar(&asJSON, "json", false, "Output json instead of yaml")
+	flag.StringVar(&namespace, "namespace", "default", "Default namespace. Use 'ask' for add a question in rancher-compose.yml")
 }
 
 func main() {
