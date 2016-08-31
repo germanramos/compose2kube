@@ -43,6 +43,7 @@ func createReplicationController(name string, shortName string, service *config.
 					Labels: map[string]string{"service": shortName},
 				},
 				Spec: api.PodSpec{
+					NodeSelector: configureAffinity(shortName, service), //map[string]string{"cloud.google.com/gke-local-ssd": "true"},
 					Containers: []api.Container{
 						{
 							Name:           shortName,
@@ -88,7 +89,7 @@ func configureVariables(service *config.ServiceConfig) []api.EnvVar {
 		if strings.Contains(env, "=") {
 			parts := strings.Split(env, "=")
 			ename := parts[0]
-			evalue := parts[1]
+			evalue := "\r" + parts[1]
 			envs = append(envs, api.EnvVar{Name: ename, Value: evalue})
 		}
 	}
@@ -96,12 +97,34 @@ func configureVariables(service *config.ServiceConfig) []api.EnvVar {
 }
 
 func configureLabels(shortName string, service *config.ServiceConfig) map[string]string {
-	labels := make(map[string]string, len(service.Labels)+1)
+	labels := make(map[string]string)
 	labels["service"] = shortName
 	for index, label := range service.Labels {
-		labels[index] = label
+		invalid := strings.Index(index, "io.rancher.scheduler")
+		if invalid >= 0 {
+			log.Printf("Ignoring label %s: %s", index, label)
+		} else {
+			labels[index] = label
+		}
 	}
 	return labels
+}
+
+func configureAffinity(shortName string, service *config.ServiceConfig) map[string]string {
+	affinity := make(map[string]string)
+	for index, label := range service.Labels {
+		if index == "io.rancher.scheduler.affinity:host_label" {
+			splitted := strings.Split(label, "=")
+			if len(splitted) != 2 {
+				log.Printf("Wrong label value %s: %s", index, label)
+			} else {
+				affinity[splitted[0]] = splitted[1]
+			}
+		} else {
+			//log.Printf("Ignoring label %s: %s", index, label)
+		}
+	}
+	return affinity
 }
 
 func configureVolumes(service *config.ServiceConfig) ([]api.VolumeMount, []api.Volume) {
