@@ -86,6 +86,7 @@ func configurePorts(name string, service *config.ServiceConfig) []api.ContainerP
 func configureVariables(service *config.ServiceConfig) []api.EnvVar {
 	// Configure the container ENV variables
 	var envs []api.EnvVar
+	envs = append(envs, api.EnvVar{Name: "NAMESPACE", Value: calculateNamespace()})
 	for _, env := range service.Environment {
 		if strings.Contains(env, "=") {
 			parts := strings.Split(env, "=")
