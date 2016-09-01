@@ -48,7 +48,8 @@ func createReplicationController(name string, shortName string, service *config.
 						{
 							Name:           shortName,
 							Image:          service.Image,
-							Command:        service.Command,
+							Args:           service.Command,
+							Command:				service.Entrypoint,
 							Ports:          configurePorts(name, service),
 							Env:            configureVariables(service),
 							ReadinessProbe: configureHealthCheck(name, rancherCompose),
