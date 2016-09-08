@@ -33,14 +33,14 @@ func createReplicationController(name string, shortName string, service *config.
 		ObjectMeta: api.ObjectMeta{
 			Name:      shortName,
 			Namespace: calculateNamespace(),
-			Labels:    configureLabels(shortName, service),
+			Labels:    map[string]string{"service": shortName},
 		},
 		Spec: api.ReplicationControllerSpec{
 			Replicas: configureScale(name, rancherCompose),
 			Selector: map[string]string{"service": shortName},
 			Template: &api.PodTemplateSpec{
 				ObjectMeta: api.ObjectMeta{
-					Labels: map[string]string{"service": shortName},
+					Labels: configureLabels(shortName, service),
 				},
 				Spec: api.PodSpec{
 					NodeSelector: configureAffinity(shortName, service), //map[string]string{"cloud.google.com/gke-local-ssd": "true"},
@@ -49,7 +49,7 @@ func createReplicationController(name string, shortName string, service *config.
 							Name:           shortName,
 							Image:          service.Image,
 							Args:           service.Command,
-							Command:				service.Entrypoint,
+							Command:        service.Entrypoint,
 							Ports:          configurePorts(name, service),
 							Env:            configureVariables(service),
 							ReadinessProbe: configureHealthCheck(name, rancherCompose),
